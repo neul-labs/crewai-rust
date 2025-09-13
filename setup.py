@@ -44,7 +44,7 @@ setup(
     version="0.1.0",
     author="CrewAI",
     author_email="info@crewai.com",
-    description="High-performance Rust implementations for CrewAI components",
+    description="High-performance Rust implementations for CrewAI components - requires explicit usage, does not automatically replace standard components",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
     url="https://github.com/crewAI/crewai",

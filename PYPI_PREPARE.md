@@ -2,6 +2,8 @@
 
 This document summarizes the changes made to prepare the crewai-rust repository for PyPI publication.
 
+**Important Note**: Installing this package does not automatically accelerate CrewAI. Users must explicitly import and use the Rust components in their code. The components do not automatically replace the standard CrewAI components.
+
 ## Changes Made
 
 ### 1. Created .gitignore

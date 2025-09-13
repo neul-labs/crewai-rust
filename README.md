@@ -24,14 +24,18 @@ pip install crewai-rust
 
 ### Usage
 
+**Important**: To use the Rust components, you must explicitly import and use them in your code. They do not automatically replace the standard CrewAI components.
+
 ```python
 from crewai_rust import RustMemoryStorage, RustToolExecutor
 
-# Components automatically fall back to Python if Rust is not available
+# Explicitly use Rust components for performance improvements
 memory = RustMemoryStorage()
 memory.save("Hello, World!")
 results = memory.search("Hello")
 ```
+
+To use the Rust-optimized components, you'll need to modify your CrewAI code to import and use these classes instead of the default Python implementations.
 
 ## Components
 

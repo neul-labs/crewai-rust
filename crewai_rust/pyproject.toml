@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "crewai-rust"
 dynamic = ["version"]
-description = "High-performance Rust implementations for CrewAI components"
+description = "High-performance Rust implementations for CrewAI components - requires explicit usage, does not automatically replace standard components"
 readme = "README.md"
 authors = [
     {name = "CrewAI", email = "info@crewai.com"}

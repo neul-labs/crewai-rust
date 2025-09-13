@@ -4,6 +4,9 @@ CrewAI Rust Integration Package
 This package provides high-performance Rust implementations for critical 
 CrewAI components while maintaining full backward compatibility.
 
+To use these components, you must explicitly import and use them in your code.
+They do not automatically replace the standard CrewAI components.
+
 The components automatically fall back to Python implementations when
 Rust is not available, ensuring zero breaking changes.
 """
