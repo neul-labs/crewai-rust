@@ -1,5 +1,5 @@
 import unittest
-from crewai_rust import RustMemoryStorage, RustToolExecutor, AgentMessage, RustTaskExecutor
+from crewai_accelerate import RustMemoryStorage, RustToolExecutor, AgentMessage, RustTaskExecutor
 
 class TestRustIntegration(unittest.TestCase):
     

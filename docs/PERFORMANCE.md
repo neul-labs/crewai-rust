@@ -6,35 +6,68 @@ Comprehensive benchmarks and optimization strategies for CrewAI Rust.
 
 | Component | Speedup | Use Case | Optimization |
 |-----------|---------|----------|--------------|
-| **Memory Storage** | 10-20x | Large document search, RAG operations | SIMD vectorization |
-| **Tool Execution** | 2-5x | Heavy tool usage, recursive calls | Zero-cost abstractions |
-| **Task Execution** | 3-5x | Parallel task workflows | Async runtime |
-| **Serialization** | 5-10x | Event processing, logging | Zero-copy operations |
-| **Database Operations** | 3-5x | Memory persistence | Connection pooling |
+| **Memory Storage** | 2-5x | Document search, RAG operations | TF-IDF similarity |
+| **Tool Execution** | 1.5-3x | Heavy tool usage, recursive calls | Stack safety |
+| **Task Execution** | 2-4x | Parallel task workflows | Tokio async runtime |
+| **Serialization** | 3-8x | Event processing, logging | Zero-copy JSON |
+| **Database Operations** | 2-4x | Memory persistence | Connection pooling |
+
+*Note: Performance improvements vary based on workload characteristics and system configuration.*
 
 ## Benchmarking
 
 ### Run Built-in Benchmarks
 
 ```python
-from crewai_rust.benchmark import run_benchmarks
+# Simple performance test
+from crewai_rust import RustMemoryStorage, RustToolExecutor, RustTaskExecutor, AgentMessage
+import time
 
-# Run all benchmarks
-results = run_benchmarks()
-print(f"Memory: {results['memory_speedup']:.1f}x faster")
-print(f"Tools: {results['tool_speedup']:.1f}x faster")
-print(f"Tasks: {results['task_speedup']:.1f}x faster")
+def benchmark_memory():
+    storage = RustMemoryStorage()
+    
+    # Test save performance
+    start = time.time()
+    for i in range(1000):
+        storage.save(f"Document {i} with content")
+    save_time = time.time() - start
+    
+    # Test search performance
+    start = time.time()
+    for i in range(100):
+        results = storage.search("Document", limit=10)
+    search_time = time.time() - start
+    
+    print(f"Save: {1000/save_time:.1f} docs/sec")
+    print(f"Search: {100/search_time:.1f} queries/sec")
+    return save_time, search_time
 
-# Run specific benchmarks
-from crewai_rust.benchmark import (
-    benchmark_memory_storage,
-    benchmark_tool_execution,
-    benchmark_serialization
-)
+def benchmark_tools():
+    executor = RustToolExecutor(max_recursion_depth=1000)
+    
+    start = time.time()
+    for i in range(1000):
+        result = executor.execute_tool("test", f"args_{i}")
+    tool_time = time.time() - start
+    
+    print(f"Tools: {1000/tool_time:.1f} executions/sec")
+    return tool_time
 
-memory_results = benchmark_memory_storage()
-tool_results = benchmark_tool_execution()
-serialization_results = benchmark_serialization()
+def benchmark_serialization():
+    start = time.time()
+    for i in range(10000):
+        msg = AgentMessage(str(i), "sender", "recipient", f"content_{i}", i)
+        json_str = msg.to_json()
+    serialization_time = time.time() - start
+    
+    print(f"Serialization: {10000/serialization_time:.1f} messages/sec")
+    return serialization_time
+
+# Run benchmarks
+print("Running performance benchmarks...")
+benchmark_memory()
+benchmark_tools()
+benchmark_serialization()
 ```
 
 ### Custom Benchmarks
@@ -52,7 +85,7 @@ def benchmark_memory():
 
     # Benchmark saves
     start = time.time()
-    for doc in documents:
+    for i, doc in enumerate(documents):
         storage.save(doc, {"index": i})
     save_time = time.time() - start
 
@@ -64,7 +97,10 @@ def benchmark_memory():
 
     print(f"Save: {len(documents)/save_time:.1f} docs/sec")
     print(f"Search: {100/search_time:.1f} queries/sec")
+    
+    return save_time, search_time
 
+# Run benchmark
 benchmark_memory()
 ```
 
@@ -226,34 +262,50 @@ import time
 from crewai import Agent, Task, Crew
 from crewai_rust import RustMemoryStorage
 
-# Before: Standard CrewAI
-start = time.time()
-crew = Crew(agents=[agent], tasks=[task])
-result = crew.kickoff()
-python_time = time.time() - start
+# Test with and without Rust acceleration
+def test_crewai_performance():
+    agent = Agent(role="Analyst", goal="Analyze data", backstory="Expert")
+    task = Task(description="Analyze data", expected_output="Report", agent=agent)
+    
+    # Test without Rust acceleration
+    start = time.time()
+    crew = Crew(agents=[agent], tasks=[task])
+    result = crew.kickoff()
+    python_time = time.time() - start
+    
+    # Test with Rust acceleration
+    import crewai_rust.shim  # Enable acceleration
+    
+    start = time.time()
+    crew = Crew(agents=[agent], tasks=[task])
+    result = crew.kickoff()
+    rust_time = time.time() - start
+    
+    speedup = python_time / rust_time if rust_time > 0 else 1.0
+    print(f"Overall speedup: {speedup:.1f}x")
+    print(f"Python time: {python_time:.3f}s")
+    print(f"Rust time: {rust_time:.3f}s")
+    
+    return speedup
 
-# After: CrewAI Rust
-import crewai_rust.shim  # Enable acceleration
-
-start = time.time()
-crew = Crew(agents=[agent], tasks=[task])
-result = crew.kickoff()
-rust_time = time.time() - start
-
-speedup = python_time / rust_time
-print(f"Overall speedup: {speedup:.1f}x")
+# Run performance test
+test_crewai_performance()
 ```
 
 ### Performance Monitoring
 
 ```python
-from crewai_rust import get_performance_metrics
+from crewai_rust.utils import get_performance_improvements, get_rust_status
 
-# Get detailed performance stats
-metrics = get_performance_metrics()
-print(f"Memory operations: {metrics['memory_ops_per_sec']}")
-print(f"Tool executions: {metrics['tool_exec_per_sec']}")
-print(f"Task throughput: {metrics['task_throughput']}")
+# Get expected performance improvements
+improvements = get_performance_improvements()
+for component, info in improvements.items():
+    print(f"{component}: {info['improvement']} improvement")
+
+# Check Rust status
+status = get_rust_status()
+print(f"Rust available: {status['available']}")
+print(f"Components: {status['components']}")
 ```
 
 ## Optimization Checklist

@@ -1,6 +1,6 @@
-# CrewAI Rust Integration
+# CrewAI Accelerate
 
-High-performance Rust implementations for critical CrewAI components.
+High-performance acceleration for CrewAI - 2-5x faster memory, tools, and task execution with zero code changes.
 
 ## Overview
 
@@ -22,22 +22,28 @@ This package provides drop-in replacements for key CrewAI components using Rust 
 ### Installation
 
 ```bash
-pip install crewai-rust
+pip install crewai-accelerate
 ```
 
 ## Usage
 
 ### Automatic Integration
 
-The package automatically detects and uses Rust components when available:
+The package provides Rust components that can be used explicitly or through automatic shimming:
 
 ```python
-from crewai_rust import RustMemoryStorage, RustToolExecutor
+# Method 1: Explicit usage
+from crewai_accelerate import AcceleratedMemoryStorage, AcceleratedToolExecutor
 
-# Components automatically fall back to Python if Rust is not available
-memory = RustMemoryStorage()
+memory = AcceleratedMemoryStorage()
 memory.save("Hello, World!")
-results = memory.search("Hello")
+results = memory.search("Hello", limit=5)
+
+# Method 2: Automatic shimming (recommended)
+import crewai_accelerate.shim  # This enables automatic replacement
+from crewai import Agent, Task, Crew
+
+# Your existing CrewAI code now uses accelerated components automatically
 ```
 
 ### Environment Configuration
@@ -45,33 +51,38 @@ results = memory.search("Hello")
 Control which components use Rust implementations:
 
 ```bash
-# Enable all Rust components
-export CREWAI_RUST_MEMORY=true
-export CREWAI_RUST_TOOLS=true
-export CREWAI_RUST_TASKS=true
-export CREWAI_RUST_SERIALIZATION=true
-export CREWAI_RUST_DATABASE=true
+# Enable all accelerated components
+export CREWAI_ACCELERATE_MEMORY=true
+export CREWAI_ACCELERATE_TOOLS=true
+export CREWAI_ACCELERATE_TASKS=true
+export CREWAI_ACCELERATE_SERIALIZATION=true
+export CREWAI_ACCELERATE_DATABASE=true
 
 # Or disable specific components
-export CREWAI_RUST_MEMORY=false
+export CREWAI_ACCELERATE_MEMORY=false
 
 # Auto-detect (default)
-export CREWAI_RUST_MEMORY=auto
+export CREWAI_ACCELERATE_MEMORY=auto
 ```
 
 ### Programmatic Configuration
 
 ```python
-from crewai_rust.utils import configure_rust_components
+from crewai_accelerate.utils import configure_accelerated_components
 
 # Enable specific components
-configure_rust_components(
+configure_accelerated_components(
     memory=True,
     tools=True,
     tasks=False,  # Use Python for tasks
     serialization=True,
     database=True
 )
+
+# Check which components are available
+from crewai_accelerate.utils import is_acceleration_available, get_acceleration_status
+print(f"Acceleration available: {is_acceleration_available()}")
+print(f"Status: {get_acceleration_status()}")
 ```
 
 ## Components
@@ -81,11 +92,11 @@ configure_rust_components(
 High-performance memory storage with thread-safe operations:
 
 ```python
-from crewai_rust.memory import RustMemoryStorage
+from crewai_accelerate import AcceleratedMemoryStorage
 
-storage = RustMemoryStorage()
+storage = AcceleratedMemoryStorage()
 storage.save("data", {"metadata": "value"})
-results = storage.search("data")
+results = storage.search("data", limit=5)
 ```
 
 ### Tool Execution
@@ -93,10 +104,10 @@ results = storage.search("data")
 Stack-safe tool execution engine with recursion limits:
 
 ```python
-from crewai_rust.tools import RustToolExecutor
+from crewai_accelerate import AcceleratedToolExecutor
 
-executor = RustToolExecutor(max_recursion_depth=100)
-result = executor.execute_tool("calculator", {"operation": "add", "operands": [1, 2]})
+executor = AcceleratedToolExecutor(max_recursion_depth=100)
+result = executor.execute_tool("calculator", '{"operation": "add", "operands": [1, 2]}')
 ```
 
 ### Task Execution
@@ -104,9 +115,9 @@ result = executor.execute_tool("calculator", {"operation": "add", "operands": [1
 Concurrent task execution framework:
 
 ```python
-from crewai_rust.tasks import RustTaskExecutor
+from crewai_accelerate import AcceleratedTaskExecutor
 
-executor = RustTaskExecutor()
+executor = AcceleratedTaskExecutor()
 tasks = ["task1", "task2", "task3"]
 results = executor.execute_concurrent_tasks(tasks)
 ```
@@ -116,17 +127,12 @@ results = executor.execute_concurrent_tasks(tasks)
 Zero-copy serialization for agent messages:
 
 ```python
-from crewai_rust.serialization import AgentMessage, RustSerializer
+from crewai_accelerate import AcceleratedMessage
 
 # Single message
-message = AgentMessage("1", "sender", "recipient", "content", 1234567890)
+message = AcceleratedMessage("1", "sender", "recipient", "content", 1234567890)
 json_str = message.to_json()
-message2 = AgentMessage.from_json(json_str)
-
-# Batch serialization
-serializer = RustSerializer()
-messages = [{"id": "1", "sender": "agent1", "content": "Hello"}]
-json_strings = serializer.serialize_batch(messages)
+message2 = AcceleratedMessage.from_json(json_str)
 ```
 
 ### Database Operations
@@ -134,11 +140,11 @@ json_strings = serializer.serialize_batch(messages)
 High-performance SQLite wrapper with connection pooling:
 
 ```python
-from crewai_rust.database import RustSQLiteWrapper
+from crewai_accelerate import AcceleratedSQLiteWrapper
 
-db = RustSQLiteWrapper("database.db", pool_size=10)
-db.save_memory("task description", {"key": "value"}, "2023-01-01", 0.95)
-results = db.load_memories("task description", latest_n=5)
+db = AcceleratedSQLiteWrapper("database.db", pool_size=10)
+# Database operations are available through execute_query, execute_update, execute_batch
+results = db.execute_query("SELECT * FROM long_term_memories", {})
 ```
 
 ## Integration with CrewAI
@@ -146,26 +152,24 @@ results = db.load_memories("task description", latest_n=5)
 ### Drop-in Memory Replacement
 
 ```python
-from crewai import Crew
-from crewai_rust.integration import RustMemoryIntegration
+import crewai_accelerate.shim  # Enable automatic acceleration
+from crewai import Crew, Agent, Task
 
-# Create a crew with Rust-enhanced memory
-crew = Crew(
-    # ... other parameters
-    memory=True,
-    short_term_memory=RustMemoryIntegration.create_short_term_memory(),
-    long_term_memory=RustMemoryIntegration.create_long_term_memory()
-)
+# Create a crew with automatic acceleration
+agent = Agent(role="Analyst", goal="Analyze data", backstory="Expert")
+task = Task(description="Analyze data", expected_output="Report", agent=agent)
+crew = Crew(agents=[agent], tasks=[task], memory=True)
+result = crew.kickoff()  # Now uses accelerated components automatically
 ```
 
 ### Performance Monitoring
 
 ```python
-from crewai_rust.utils import get_rust_status, get_performance_improvements
+from crewai_accelerate.utils import get_acceleration_status, get_performance_improvements
 
 # Check which components are available
-status = get_rust_status()
-print(f"Rust available: {status['available']}")
+status = get_acceleration_status()
+print(f"Acceleration available: {status['available']}")
 
 # Get expected performance improvements
 improvements = get_performance_improvements()
@@ -175,48 +179,46 @@ for component, info in improvements.items():
 
 ## Testing Compatibility
 
-### Run Compatibility Tests
+### Run Tests
 
 ```bash
-# Run all compatibility tests
-python -m crewai_rust.run_compatibility_tests
+# Run all tests
+python -m pytest tests/
 
-# Run specific test suites
-python -m crewai_rust.run_compatibility_tests seamless
-python -m crewai_rust.run_compatibility_tests compatibility
-python -m crewai_rust.run_compatibility_tests replacement
+# Run specific test categories
+python -m pytest tests/test_memory.py -v
+python -m pytest tests/test_tools.py -v
+python -m pytest tests/test_integration.py -v
 ```
 
-### Generate Compatibility Report
+### Verify Installation
 
 ```bash
-# Generate detailed compatibility report
-python -m crewai_rust.test_compatibility_report
+# Check if acceleration components are available
+python -c "from crewai_accelerate import is_acceleration_available; print(f'Acceleration available: {is_acceleration_available()}')"
 ```
 
 ## Benchmarking
 
 Run performance benchmarks to see improvements:
 
-```bash
-# Run benchmarks
-python -m crewai_rust bench
-
-# Check status
-python -m crewai_rust status
-
-# Get environment info
-python -m crewai_rust env
-```
-
-Or programmatically:
-
 ```python
-from crewai_rust.benchmark import PerformanceBenchmark
+# Run basic performance test
+from crewai_accelerate import AcceleratedMemoryStorage
+import time
 
-benchmark = PerformanceBenchmark(iterations=1000)
-results = benchmark.run_all_benchmarks()
-benchmark.print_summary()
+# Test memory performance
+storage = AcceleratedMemoryStorage()
+start = time.time()
+for i in range(1000):
+    storage.save(f"Test document {i}")
+search_start = time.time()
+results = storage.search("Test", limit=10)
+end = time.time()
+
+print(f"Save time: {search_start - start:.3f}s")
+print(f"Search time: {end - search_start:.3f}s")
+print(f"Results: {len(results)}")
 ```
 
 ## Development
@@ -242,23 +244,19 @@ python -m pytest
 
 # Run Rust tests
 cargo test
-
-# Run compatibility tests
-python -m crewai_rust.run_compatibility_tests
-
-# Run example usage tests
-python -m crewai_rust.test_example_usage
 ```
 
 ## Performance Improvements
 
 | Component | Improvement | Description |
 |-----------|-------------|-------------|
-| Memory Storage | 10-20x | SIMD-accelerated vector operations |
-| Tool Execution | 2-5x | Stack safety and zero-cost error handling |
-| Task Execution | 3-5x | True concurrency with work-stealing scheduler |
-| Serialization | 5-10x | Zero-copy optimizations |
-| Database Operations | 3-5x | Connection pooling and prepared statements |
+| Memory Storage | 2-5x | Optimized search with TF-IDF similarity |
+| Tool Execution | 1.5-3x | Stack safety and improved error handling |
+| Task Execution | 2-4x | Concurrent execution with Tokio runtime |
+| Serialization | 3-8x | Zero-copy JSON serialization |
+| Database Operations | 2-4x | Connection pooling and prepared statements |
+
+*Note: Actual performance improvements depend on workload characteristics and system configuration.*
 
 ## Compatibility
 

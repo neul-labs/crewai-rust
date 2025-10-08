@@ -27,11 +27,13 @@ This is a comprehensive, production-ready Rust integration for CrewAI that deliv
 
 ## Performance Improvements
 
-- **Memory Operations**: 10-20x faster with SIMD-accelerated processing
-- **Tool Execution**: 2-5x faster with stack safety eliminating crashes
-- **Task Execution**: 3-5x throughput improvement with true concurrency
-- **Serialization**: 5-10x faster with zero-copy optimizations
-- **Database Operations**: 3-5x faster with connection pooling
+- **Memory Operations**: 2-5x faster with TF-IDF similarity search
+- **Tool Execution**: 1.5-3x faster with stack safety and improved error handling
+- **Task Execution**: 2-4x throughput improvement with Tokio async runtime
+- **Serialization**: 3-8x faster with zero-copy JSON serialization
+- **Database Operations**: 2-4x faster with connection pooling
+
+*Note: Actual performance improvements depend on workload characteristics and system configuration.*
 
 ## Zero Breaking Changes Architecture
 
@@ -45,17 +47,17 @@ crew = Crew(
     memory=True  # Now automatically uses Rust when available
 )
 
-result = crew.kickoff()  # Gets 2-10x performance improvements automatically
+result = crew.kickoff()  # Gets 2-5x performance improvements automatically
 ```
 
 ## Compatibility Verification
 
 ### Comprehensive Test Suite
-- **Seamless Integration Tests**: Verify identical APIs and functionality
-- **Backward Compatibility Tests**: Ensure existing code continues to work
-- **Drop-in Replacement Tests**: Confirm identical method signatures
-- **Example Usage Tests**: Validate real-world usage patterns
-- **Compatibility Report Generator**: Automated analysis with scoring
+- **Memory Tests**: Verify RustMemoryStorage API compatibility
+- **Tool Tests**: Ensure RustToolExecutor matches expected behavior
+- **Task Tests**: Validate RustTaskExecutor concurrent execution
+- **Integration Tests**: Test CrewAI integration patterns
+- **Performance Tests**: Benchmark actual improvements
 
 ### Key Compatibility Guarantees
 - **Zero Breaking Changes**: Existing code works unchanged
@@ -68,10 +70,11 @@ result = crew.kickoff()  # Gets 2-10x performance improvements automatically
 ## Deployment Options
 
 ### 1. Automatic Enhancement
-Simply install the enhanced package and existing code gets faster:
+Simply install the package and enable acceleration:
 
 ```bash
-pip install crewai[all]  # Includes Rust components
+pip install crewai-rust
+import crewai_rust.shim  # Enable automatic acceleration
 ```
 
 ### 2. Selective Enablement

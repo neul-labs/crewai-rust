@@ -3,7 +3,7 @@
 # This example shows how we could replace the existing Python task execution
 # system with a high-performance Rust implementation
 
-from crewai_rust import RustTaskExecutor
+from crewai_accelerate import RustTaskExecutor
 import time
 import asyncio
 

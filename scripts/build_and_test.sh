@@ -1,7 +1,7 @@
 #!/bin/bash
-# Script to build and test the crewai-rust package
+# Script to build and test the crewai-accelerate package
 
-echo "Building crewai-rust package with maturin..."
+echo "Building crewai-accelerate package with maturin..."
 
 # Check if maturin is installed
 if ! command -v maturin &> /dev/null

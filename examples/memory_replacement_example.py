@@ -3,7 +3,7 @@
 # This example shows how we could replace the existing Python memory system
 # with a high-performance Rust implementation
 
-from crewai_rust import RustMemoryStorage
+from crewai_accelerate import RustMemoryStorage
 
 class RustShortTermMemory:
     """

@@ -3,7 +3,7 @@
 # This example shows how we could replace the existing Python serialization
 # system with a high-performance Rust implementation
 
-from crewai_rust import AgentMessage
+from crewai_accelerate import AgentMessage
 import json
 import time
 

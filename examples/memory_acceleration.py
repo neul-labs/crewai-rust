@@ -10,7 +10,7 @@ import time
 import json
 from typing import List, Dict, Any
 
-from crewai_rust import RustMemoryStorage
+from crewai_accelerate import RustMemoryStorage
 
 
 def benchmark_memory_operations():
@@ -228,7 +228,7 @@ def main():
     print("=" * 50)
 
     # Check Rust availability
-    from crewai_rust import is_rust_available
+    from crewai_accelerate import is_rust_available
     if not is_rust_available():
         print("Rust acceleration not available")
         print("   Please ensure crewai-rust is properly installed")

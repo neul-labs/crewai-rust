@@ -1,14 +1,14 @@
 """
-Main entry point for the CrewAI Rust integration package.
+Main entry point for the CrewAI Accelerate package.
 
-This module provides command-line utilities for working with the Rust components.
+This module provides command-line utilities for working with the accelerated components.
 """
 
 import sys
 import argparse
 from .utils import (
-    is_rust_available, 
-    get_rust_status, 
+    is_acceleration_available, 
+    get_acceleration_status, 
     get_environment_info,
     get_performance_improvements
 )
@@ -133,15 +133,15 @@ if __name__ == "__main__":
 
 
 def status_cmd(verbose=False):
-    """Check Rust component status."""
-    print("CrewAI Rust Integration Status")
+    """Check acceleration component status."""
+    print("CrewAI Accelerate Status")
     print("=" * 30)
     
-    available = is_rust_available()
-    print(f"Rust Implementation Available: {'Yes' if available else 'No'}")
+    available = is_acceleration_available()
+    print(f"Acceleration Implementation Available: {'Yes' if available else 'No'}")
     
     if available:
-        status = get_rust_status()
+        status = get_acceleration_status()
         print(f"Components Available:")
         for component, available in status['components'].items():
             print(f"  {component}: {'Yes' if available else 'No'}")

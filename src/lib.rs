@@ -4,10 +4,73 @@ use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 
+// Add a new struct to store memory items with metadata
+#[derive(Debug, Clone)]
+struct MemoryItem {
+    id: u64,
+    content: String,
+    // Store word frequencies for TF-IDF computation
+    word_frequencies: HashMap<String, f64>,
+}
+
 /// A high-performance memory storage system
 #[pyclass]
 pub struct RustMemoryStorage {
-    data: Arc<Mutex<Vec<String>>>,
+    data: Arc<Mutex<Vec<MemoryItem>>>,
+    next_id: Arc<Mutex<u64>>,
+}
+
+impl RustMemoryStorage {
+    // Helper function to compute word frequencies for TF-IDF (private, not exposed to Python)
+    fn compute_word_frequencies(&self, text: &str) -> HashMap<String, f64> {
+        let mut frequencies = HashMap::new();
+        
+        // Tokenize and convert to lowercase
+        let lower_text = text.to_lowercase();
+        let tokens: Vec<String> = lower_text
+            .split(|c: char| c.is_whitespace() || c == '.' || c == ',' || c == '!' || c == '?' || c == ';' || c == ':' || c == '(' || c == ')')
+            .filter(|s| !s.is_empty())
+            .map(|s| s.to_string())
+            .collect();
+        
+        for token in tokens {
+            *frequencies.entry(token).or_insert(0.0) += 1.0;
+        }
+        
+        frequencies
+    }
+    
+    // Helper function to calculate cosine similarity between two word frequency maps (private, not exposed to Python)
+    fn calculate_cosine_similarity(&self, query_freq: &HashMap<String, f64>, item_freq: &HashMap<String, f64>) -> f64 {
+        // Get all unique terms from both documents
+        let mut all_terms = std::collections::HashSet::new();
+        for term in query_freq.keys() {
+            all_terms.insert(term);
+        }
+        for term in item_freq.keys() {
+            all_terms.insert(term);
+        }
+        
+        // Calculate cosine similarity
+        let mut dot_product = 0.0;
+        let mut query_norm = 0.0;
+        let mut item_norm = 0.0;
+        
+        for term in &all_terms {
+            let query_tf = *query_freq.get(*term).unwrap_or(&0.0);
+            let item_tf = *item_freq.get(*term).unwrap_or(&0.0);
+            
+            dot_product += query_tf * item_tf;
+            query_norm += query_tf * query_tf;
+            item_norm += item_tf * item_tf;
+        }
+        
+        if query_norm == 0.0 || item_norm == 0.0 {
+            return 0.0; // No similarity if one vector is zero
+        }
+        
+        dot_product / (query_norm.sqrt() * item_norm.sqrt())
+    }
 }
 
 #[pymethods]
@@ -16,6 +79,7 @@ impl RustMemoryStorage {
     pub fn new() -> Self {
         RustMemoryStorage {
             data: Arc::new(Mutex::new(Vec::new())),
+            next_id: Arc::new(Mutex::new(0)),
         }
     }
 
@@ -26,7 +90,26 @@ impl RustMemoryStorage {
                 e
             ))
         })?;
-        data.push(value.to_string());
+        
+        let mut next_id = self.next_id.lock().map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!(
+                "Failed to acquire id lock: {}",
+                e
+            ))
+        })?;
+        
+        // Create word frequency map for TF-IDF
+        let word_frequencies = self.compute_word_frequencies(value);
+        
+        let item = MemoryItem {
+            id: *next_id,
+            content: value.to_string(),
+            word_frequencies,
+        };
+        
+        data.push(item);
+        *next_id += 1;
+        
         Ok(())
     }
 
@@ -37,21 +120,38 @@ impl RustMemoryStorage {
                 e
             ))
         })?;
-        Ok(data.clone())
+        Ok(data.iter().map(|item| item.content.clone()).collect())
     }
 
-    pub fn search(&self, query: &str) -> PyResult<Vec<String>> {
+    pub fn search(&self, query: &str, limit: usize) -> PyResult<Vec<String>> {
         let data = self.data.lock().map_err(|e| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!(
                 "Failed to acquire lock: {}",
                 e
             ))
         })?;
-        let results: Vec<String> = data
-            .iter()
-            .filter(|item| item.contains(query))
-            .cloned()
+        
+        // Compute query word frequencies
+        let query_frequencies = self.compute_word_frequencies(query);
+        
+        // Calculate similarity scores for each item
+        let mut scored_results: Vec<(String, f64)> = Vec::new();
+        
+        for item in &*data {
+            let similarity = self.calculate_cosine_similarity(&query_frequencies, &item.word_frequencies);
+            scored_results.push((item.content.clone(), similarity));
+        }
+        
+        // Sort by similarity score (descending)
+        scored_results.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        
+        // Take top results up to limit
+        let results: Vec<String> = scored_results
+            .into_iter()
+            .take(limit)
+            .map(|(content, _)| content)
             .collect();
+            
         Ok(results)
     }
 }

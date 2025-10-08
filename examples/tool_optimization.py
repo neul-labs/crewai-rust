@@ -10,7 +10,7 @@ import time
 import json
 from typing import Dict, Any, List
 
-from crewai_rust import RustToolExecutor
+from crewai_accelerate import RustToolExecutor
 from crewai import Agent, Task, Crew, tool
 
 
@@ -195,7 +195,7 @@ def demonstrate_crewai_integration():
     print("=" * 45)
 
     # Enable Rust acceleration
-    import crewai_rust.shim
+    import crewai_accelerate.shim
 
     # Create an agent with our optimized tools
     data_analyst = Agent(
@@ -316,7 +316,7 @@ def main():
     print("=" * 50)
 
     # Check Rust availability
-    from crewai_rust import is_rust_available
+    from crewai_accelerate import is_rust_available
     if not is_rust_available():
         print("❌ Rust acceleration not available")
         return

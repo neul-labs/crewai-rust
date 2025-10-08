@@ -8,20 +8,20 @@ import json
 from typing import Dict, Any, List
 
 
-class TestRustMemoryStorage:
-    """Test cases for RustMemoryStorage component."""
+class TestAcceleratedMemoryStorage:
+    """Test cases for AcceleratedMemoryStorage component."""
 
     def test_import_memory_storage(self):
-        """Test that we can import RustMemoryStorage."""
-        from crewai_rust import RustMemoryStorage
-        storage = RustMemoryStorage()
+        """Test that we can import AcceleratedMemoryStorage."""
+        from crewai_accelerate import AcceleratedMemoryStorage
+        storage = AcceleratedMemoryStorage()
         assert storage is not None
 
     def test_memory_save_basic(self):
         """Test basic save functionality."""
-        from crewai_rust import RustMemoryStorage
+        from crewai_accelerate import AcceleratedMemoryStorage
 
-        storage = RustMemoryStorage()
+        storage = AcceleratedMemoryStorage()
         storage.save("test data", {"key": "value"})
 
         # Basic verification that save doesn't crash
@@ -29,9 +29,9 @@ class TestRustMemoryStorage:
 
     def test_memory_search_basic(self):
         """Test basic search functionality."""
-        from crewai_rust import RustMemoryStorage
+        from crewai_accelerate import AcceleratedMemoryStorage
 
-        storage = RustMemoryStorage()
+        storage = AcceleratedMemoryStorage()
         storage.save("test document about AI", {"topic": "AI"})
         storage.save("another document about ML", {"topic": "ML"})
 
@@ -40,17 +40,17 @@ class TestRustMemoryStorage:
 
     def test_memory_implementation_detection(self):
         """Test that we can detect which implementation is being used."""
-        from crewai_rust import RustMemoryStorage
+        from crewai_accelerate import AcceleratedMemoryStorage
 
-        storage = RustMemoryStorage()
+        storage = AcceleratedMemoryStorage()
         assert hasattr(storage, 'implementation')
         assert storage.implementation in ['rust', 'python']
 
     def test_memory_with_complex_metadata(self):
         """Test memory storage with complex metadata."""
-        from crewai_rust import RustMemoryStorage
+        from crewai_accelerate import AcceleratedMemoryStorage
 
-        storage = RustMemoryStorage()
+        storage = AcceleratedMemoryStorage()
 
         complex_metadata = {
             "author": "AI Researcher",
@@ -69,9 +69,9 @@ class TestRustMemoryStorage:
 
     def test_memory_performance_basic(self):
         """Basic performance test for memory operations."""
-        from crewai_rust import RustMemoryStorage
+        from crewai_accelerate import AcceleratedMemoryStorage
 
-        storage = RustMemoryStorage()
+        storage = AcceleratedMemoryStorage()
 
         # Test save performance
         documents = [f"Document {i}" for i in range(100)]
@@ -93,10 +93,10 @@ class TestRustMemoryStorage:
 
     def test_memory_fallback_behavior(self):
         """Test fallback behavior when Rust is not available."""
-        from crewai_rust import RustMemoryStorage
+        from crewai_accelerate import AcceleratedMemoryStorage
 
         # Test with explicit Python fallback
-        storage = RustMemoryStorage(use_rust=False)
+        storage = AcceleratedMemoryStorage(use_rust=False)
         assert storage.implementation == "python"
 
         # Test basic functionality with Python fallback
@@ -112,7 +112,7 @@ class TestMemoryIntegration:
         """Test that CrewAI memory imports work after shimming."""
         try:
             # Import shim first
-            import crewai_rust.shim
+            import crewai_accelerate.shim
 
             # Then try to import CrewAI memory components
             from crewai.memory.storage.rag_storage import RAGStorage
@@ -128,7 +128,7 @@ class TestMemoryIntegration:
     def test_memory_component_replacement(self):
         """Test that memory components are properly replaced by shim."""
         try:
-            import crewai_rust.shim
+            import crewai_accelerate.shim
             from crewai.memory.storage.rag_storage import RAGStorage
 
             # Try to create storage - should use Rust implementation if available
@@ -149,18 +149,18 @@ class TestMemoryEdgeCases:
 
     def test_memory_empty_search(self):
         """Test search with empty storage."""
-        from crewai_rust import RustMemoryStorage
+        from crewai_accelerate import AcceleratedMemoryStorage
 
-        storage = RustMemoryStorage()
+        storage = AcceleratedMemoryStorage()
         results = storage.search("nonexistent", limit=5)
         assert isinstance(results, list)
         assert len(results) == 0
 
     def test_memory_large_document(self):
         """Test with large document content."""
-        from crewai_rust import RustMemoryStorage
+        from crewai_accelerate import AcceleratedMemoryStorage
 
-        storage = RustMemoryStorage()
+        storage = AcceleratedMemoryStorage()
 
         # Create a large document
         large_content = " ".join([f"word{i}" for i in range(1000)])
@@ -171,9 +171,9 @@ class TestMemoryEdgeCases:
 
     def test_memory_special_characters(self):
         """Test with special characters and unicode."""
-        from crewai_rust import RustMemoryStorage
+        from crewai_accelerate import AcceleratedMemoryStorage
 
-        storage = RustMemoryStorage()
+        storage = AcceleratedMemoryStorage()
 
         special_content = "Special characters: αβγ 中文 🚀 emoji test"
         storage.save(special_content, {"encoding": "utf-8"})
@@ -183,9 +183,9 @@ class TestMemoryEdgeCases:
 
     def test_memory_json_serialization(self):
         """Test that metadata can be properly serialized."""
-        from crewai_rust import RustMemoryStorage
+        from crewai_accelerate import AcceleratedMemoryStorage
 
-        storage = RustMemoryStorage()
+        storage = AcceleratedMemoryStorage()
 
         # Metadata that might cause JSON issues
         problematic_metadata = {

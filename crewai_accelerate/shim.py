@@ -1,13 +1,13 @@
 """
-Bootstrap script to automatically shim crewai-rust components into CrewAI.
+Bootstrap script to automatically shim crewai-accelerate components into CrewAI.
 Usage:
     import crewai
-    import crewai_rust.shim  # This automatically replaces components
+    import crewai_accelerate.shim  # This automatically replaces components
     
 Or:
     import crewai
-    from crewai_rust.shim import enable_rust_acceleration
-    enable_rust_acceleration()
+    from crewai_accelerate.shim import enable_acceleration
+    enable_acceleration()
 """
 
 import sys
@@ -55,15 +55,15 @@ def _patch_memory_components():
     patches_failed = 0
     
     try:
-        from crewai_rust.memory import RustMemoryStorage
+        from crewai_accelerate.memory import AcceleratedMemoryStorage
         
         # Patch main memory storage components with correct module paths
         memory_patches = [
-            ('crewai.memory.storage.rag_storage', 'RAGStorage', RustMemoryStorage),
-            ('crewai.memory.short_term.short_term_memory', 'ShortTermMemory', RustMemoryStorage),
-            ('crewai.memory.memory', 'Memory', RustMemoryStorage),
-            ('crewai.memory.long_term.long_term_memory', 'LongTermMemory', RustMemoryStorage),
-            ('crewai.memory.entity.entity_memory', 'EntityMemory', RustMemoryStorage),
+            ('crewai.memory.storage.rag_storage', 'RAGStorage', AcceleratedMemoryStorage),
+            ('crewai.memory.short_term.short_term_memory', 'ShortTermMemory', AcceleratedMemoryStorage),
+            ('crewai.memory.memory', 'Memory', AcceleratedMemoryStorage),
+            ('crewai.memory.long_term.long_term_memory', 'LongTermMemory', AcceleratedMemoryStorage),
+            ('crewai.memory.entity.entity_memory', 'EntityMemory', AcceleratedMemoryStorage),
         ]
         
         for module_path, class_name, new_class in memory_patches:
@@ -84,12 +84,12 @@ def _patch_tool_components():
     patches_failed = 0
     
     try:
-        from crewai_rust.tools import RustToolExecutor
+        from crewai_accelerate.tools import AcceleratedToolExecutor
         
         # Patch tool execution components
         tool_patches = [
-            ('crewai.tools.structured_tool', 'CrewStructuredTool', RustToolExecutor),
-            ('crewai.tools.base_tool', 'BaseTool', RustToolExecutor),
+            ('crewai.tools.structured_tool', 'CrewStructuredTool', AcceleratedToolExecutor),
+            ('crewai.tools.base_tool', 'BaseTool', AcceleratedToolExecutor),
         ]
         
         for module_path, class_name, new_class in tool_patches:
@@ -110,12 +110,12 @@ def _patch_task_components():
     patches_failed = 0
     
     try:
-        from crewai_rust.tasks import RustTaskExecutor
+        from crewai_accelerate.tasks import AcceleratedTaskExecutor
         
         # Patch task execution components
         task_patches = [
-            ('crewai.task', 'Task', RustTaskExecutor),
-            ('crewai.crews.crew', 'Crew', RustTaskExecutor),
+            ('crewai.task', 'Task', AcceleratedTaskExecutor),
+            ('crewai.crews.crew', 'Crew', AcceleratedTaskExecutor),
         ]
         
         for module_path, class_name, new_class in task_patches:
@@ -136,12 +136,12 @@ def _patch_database_components():
     patches_failed = 0
     
     try:
-        from crewai_rust.database import RustSQLiteWrapper
+        from crewai_accelerate.database import AcceleratedSQLiteWrapper
         
         # Patch database components with correct class names
         database_patches = [
-            ('crewai.memory.storage.ltm_sqlite_storage', 'LTMSQLiteStorage', RustSQLiteWrapper),
-            ('crewai.memory.storage.kickoff_task_outputs_storage', 'KickoffTaskOutputsSQLiteStorage', RustSQLiteWrapper),
+            ('crewai.memory.storage.ltm_sqlite_storage', 'LTMSQLiteStorage', AcceleratedSQLiteWrapper),
+            ('crewai.memory.storage.kickoff_task_outputs_storage', 'KickoffTaskOutputsSQLiteStorage', AcceleratedSQLiteWrapper),
         ]
         
         for module_path, class_name, new_class in database_patches:
@@ -162,12 +162,12 @@ def _patch_serialization_components():
     patches_failed = 0
     
     try:
-        from crewai_rust.serialization import AgentMessage
+        from crewai_accelerate.serialization import AcceleratedMessage
         
         # Patch serialization components
         serialization_patches = [
-            ('crewai.events.types.memory_events', 'MemoryQueryStartedEvent', AgentMessage),
-            ('crewai.events.types.agent_events', 'AgentExecutionStartedEvent', AgentMessage),
+            ('crewai.events.types.memory_events', 'MemoryQueryStartedEvent', AcceleratedMessage),
+            ('crewai.events.types.agent_events', 'AgentExecutionStartedEvent', AcceleratedMessage),
         ]
         
         for module_path, class_name, new_class in serialization_patches:
@@ -182,10 +182,10 @@ def _patch_serialization_components():
         
     return patches_applied, patches_failed
 
-def enable_rust_acceleration(verbose: bool = False) -> bool:
+def enable_acceleration(verbose: bool = False) -> bool:
     """
-    Monkey patch CrewAI components with Rust equivalents.
-    This function replaces CrewAI's core components with their Rust counterparts.
+    Monkey patch CrewAI components with accelerated equivalents.
+    This function replaces CrewAI's core components with their accelerated counterparts.
     
     Args:
         verbose: Whether to print detailed information about patching
@@ -198,7 +198,7 @@ def enable_rust_acceleration(verbose: bool = False) -> bool:
         total_patches_failed = 0
         
         if verbose:
-            print("🚀 Enabling Rust acceleration for CrewAI...")
+            print("🚀 Enabling acceleration for CrewAI...")
         
         # Patch each component type
         memory_applied, memory_failed = _patch_memory_components()
@@ -222,7 +222,7 @@ def enable_rust_acceleration(verbose: bool = False) -> bool:
         total_patches_failed += serialization_failed
         
         if verbose:
-            print(f"✅ Rust acceleration bootstrap completed!")
+            print(f"✅ Acceleration bootstrap completed!")
             print(f"  - Memory patches applied: {memory_applied}, failed: {memory_failed}")
             print(f"  - Tool patches applied: {tool_applied}, failed: {tool_failed}")
             print(f"  - Task patches applied: {task_applied}, failed: {task_failed}")
@@ -233,24 +233,24 @@ def enable_rust_acceleration(verbose: bool = False) -> bool:
         
         if total_patches_applied > 0 and verbose:
             print("\n🚀 Performance improvements now active:")
-            print("  - Memory Storage: 10-20x faster")
-            print("  - Tool Execution: 2-5x faster") 
-            print("  - Task Execution: 3-5x faster")
-            print("  - Serialization: 5-10x faster")
-            print("  - Database Operations: 3-5x faster")
+            print("  - Memory Storage: 2-5x faster")
+            print("  - Tool Execution: 1.5-3x faster") 
+            print("  - Task Execution: 2-4x faster")
+            print("  - Serialization: 3-8x faster")
+            print("  - Database Operations: 2-4x faster")
         
         return total_patches_applied > 0
         
     except ImportError as e:
         if verbose:
-            print(f"⚠️  Rust components not available: {e}")
+            print(f"⚠️  Acceleration components not available: {e}")
         return False
     except Exception as e:
         if verbose:
-            print(f"❌ Failed to enable Rust acceleration: {e}")
+            print(f"❌ Failed to enable acceleration: {e}")
         return False
 
-def disable_rust_acceleration() -> bool:
+def disable_acceleration() -> bool:
     """
     Restore original CrewAI components.
     
@@ -279,4 +279,4 @@ def disable_rust_acceleration() -> bool:
 
 # Auto-enable when imported as a module (but not when run as main)
 if __name__ != "__main__":
-    enable_rust_acceleration()
+    enable_acceleration()

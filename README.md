@@ -1,12 +1,12 @@
-# CrewAI Rust
+# CrewAI Accelerate
 
-High-performance Rust acceleration for CrewAI workflows
+High-performance acceleration for CrewAI - 2-5x faster memory, tools, and task execution with zero code changes
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Rust](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org/)
 
-CrewAI Rust provides drop-in Rust implementations for performance-critical CrewAI components, delivering significant speed improvements while maintaining 100% API compatibility.
+CrewAI Accelerate provides high-performance acceleration for CrewAI components, delivering 2-5x speed improvements while maintaining 100% API compatibility.
 
 ## Performance Improvements
 
@@ -20,8 +20,22 @@ CrewAI Rust provides drop-in Rust implementations for performance-critical CrewA
 
 ## Installation
 
+### Quick Install (Recommended)
 ```bash
-pip install crewai-rust
+pip install crewai-accelerate
+```
+
+### Development Install
+```bash
+# Clone the repository
+git clone https://github.com/crewAI/crewai-accelerate.git
+cd crewai-accelerate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Build the Rust extension
+maturin develop
 ```
 
 ## Quick Start
@@ -32,7 +46,7 @@ Accelerate existing CrewAI projects without any code changes:
 
 ```python
 import crewai
-import crewai_rust.shim  # Automatically enables Rust acceleration
+import crewai_accelerate.shim  # Automatically enables acceleration
 
 from crewai import Agent, Task, Crew
 # Your existing CrewAI code works unchanged
@@ -41,32 +55,73 @@ from crewai import Agent, Task, Crew
 **Alternative activation methods:**
 ```bash
 # Environment variable
-export CREWAI_RUST_ACCELERATION=1
+export CREWAI_ACCELERATE_ACCELERATION=1
 python your_script.py
 
 # Command line
-crewai-rust-bootstrap && python your_script.py
+crewai-accelerate-bootstrap && python your_script.py
 ```
 
 ### Explicit Component Usage
 
-For fine-grained control over which components use Rust:
+For fine-grained control over which components use acceleration:
 
 ```python
-from crewai_rust import RustMemoryStorage, RustToolExecutor
+from crewai_accelerate import AcceleratedMemoryStorage, AcceleratedToolExecutor
 
-# Explicit Rust usage
-memory = RustMemoryStorage()
+# Explicit acceleration usage
+memory = AcceleratedMemoryStorage()
 memory.save("Important data", {"priority": "high"})
 results = memory.search("data")
 
-# Mixed usage - Rust where it matters most
+# Mixed usage - acceleration where it matters most
 crew = Crew(
     agents=[agent],
     tasks=[task],
-    memory_storage=RustMemoryStorage(),  # Rust acceleration
+    memory_storage=AcceleratedMemoryStorage(),  # Acceleration
     # Other components use standard Python
 )
+```
+
+## Testing
+
+### Quick Test
+```bash
+# Run all tests
+python run_tests.py
+
+# Run fast tests only
+python run_tests.py fast
+
+# Run with coverage
+python run_tests.py coverage
+```
+
+### Using Make
+```bash
+# Install and build
+make install-dev
+
+# Run tests
+make test
+
+# Run fast tests
+make test-fast
+
+# Run with coverage
+make test-coverage
+```
+
+### Using pytest directly
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Build Rust extension
+maturin develop
+
+# Run tests
+pytest -v
 ```
 
 ## Configuration

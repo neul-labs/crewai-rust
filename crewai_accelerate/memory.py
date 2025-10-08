@@ -121,15 +121,16 @@ class RustMemoryStorage:
         """
         if self._use_rust:
             try:
-                # Use Rust implementation for search
-                serialized_results = self._storage.search(query)
+                # Use Rust implementation for search (with semantic similarity)
+                serialized_results = self._storage.search(query, limit)
                 results = []
-                for item in serialized_results[:limit]:
+                for item in serialized_results:
                     try:
+                        # Try to parse as JSON (from metadata save)
                         data = json.loads(item)
                         results.append(data)
                     except (json.JSONDecodeError, KeyError):
-                        # Handle legacy or malformed data
+                        # If it's just raw content, wrap it
                         results.append({
                             'value': item,
                             'metadata': {},

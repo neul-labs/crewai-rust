@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # Import test modules
 try:
     from test_seamless_integration import TestSeamlessIntegration
-    from test_backward_compatibility import TestImportCompatibility
+    from test_backward_compatibility import TestBackwardCompatibility
     from test_drop_in_replacement import TestDropInReplacement
     from test_example_usage import TestExampleUsage
     MODULES_AVAILABLE = True
@@ -47,7 +47,7 @@ def run_compatibility_analysis():
     # Test categories
     test_categories = {
         "Seamless Integration": TestSeamlessIntegration,
-        "Backward Compatibility": TestImportCompatibility,
+        "Backward Compatibility": TestBackwardCompatibility,
         "Drop-in Replacement": TestDropInReplacement,
         "Example Usage": TestExampleUsage
     }
@@ -225,3 +225,5 @@ def main():
 if __name__ == "__main__":
     success = main()
     sys.exit(0 if success else 1)
+
+

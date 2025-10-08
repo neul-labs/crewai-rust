@@ -1,20 +1,20 @@
 # Installation Guide
 
-Comprehensive installation instructions for CrewAI Rust.
+Comprehensive installation instructions for CrewAI Accelerate.
 
 ## Standard Installation
 
 ### Via pip (Recommended)
 
 ```bash
-pip install crewai-rust
+pip install crewai-accelerate
 ```
 
 ### Via pip with extras
 
 ```bash
 # Include development dependencies
-pip install crewai-rust[dev]
+pip install crewai-accelerate[dev]
 ```
 
 ## Development Installation
@@ -94,9 +94,9 @@ pip install crewai-rust
 ```python
 # Test basic import
 try:
-    import crewai_rust
-    print("CrewAI Rust installed successfully")
-    print(f"Version: {crewai_rust.__version__}")
+    import crewai_accelerate
+    print("CrewAI Accelerate installed successfully")
+    print(f"Version: {crewai_accelerate.__version__}")
 except ImportError as e:
     print(f"Installation failed: {e}")
 ```
@@ -104,19 +104,25 @@ except ImportError as e:
 ### Test Rust Components
 
 ```python
-# Test Rust acceleration
-from crewai_rust import is_rust_available, get_rust_status
+# Test acceleration
+from crewai_accelerate import is_acceleration_available, get_acceleration_status
 
-if is_rust_available():
-    print("Rust acceleration available")
-    print(f"Status: {get_rust_status()}")
+if is_acceleration_available():
+    print("✅ Acceleration available")
+    print(f"Status: {get_acceleration_status()}")
 
     # Test memory component
-    from crewai_rust import RustMemoryStorage
-    memory = RustMemoryStorage()
+    from crewai_accelerate import AcceleratedMemoryStorage
+    memory = AcceleratedMemoryStorage()
     print(f"Memory implementation: {memory.implementation}")
+    
+    # Test basic functionality
+    memory.save("Test data")
+    results = memory.search("Test", limit=5)
+    print(f"Search results: {results}")
 else:
-    print("Rust acceleration not available")
+    print("❌ Acceleration not available")
+    print("This is normal if accelerated components are not built or installed")
 ```
 
 ### Run Test Suite
@@ -131,6 +137,46 @@ python -m pytest tests/ -v
 # Run specific test categories
 python -m pytest tests/test_memory.py -v
 python -m pytest tests/test_tools.py -v
+
+# Run Rust tests (if Rust is installed)
+cargo test
+```
+
+### Quick Functionality Test
+
+```python
+# Test all components quickly
+from crewai_accelerate import (
+    AcceleratedMemoryStorage, 
+    AcceleratedToolExecutor, 
+    AcceleratedTaskExecutor,
+    AcceleratedMessage,
+    AcceleratedSQLiteWrapper
+)
+
+# Test memory
+memory = AcceleratedMemoryStorage()
+memory.save("Hello World")
+results = memory.search("Hello", limit=1)
+print(f"Memory test: {len(results)} results")
+
+# Test tool executor
+tool_exec = AcceleratedToolExecutor(max_recursion_depth=100)
+result = tool_exec.execute_tool("test", "args")
+print(f"Tool test: {result}")
+
+# Test task executor
+task_exec = AcceleratedTaskExecutor()
+tasks = ["task1", "task2"]
+results = task_exec.execute_concurrent_tasks(tasks)
+print(f"Task test: {len(results)} completed")
+
+# Test serialization
+msg = AcceleratedMessage("1", "sender", "recipient", "content", 1234567890)
+json_str = msg.to_json()
+print(f"Serialization test: {len(json_str)} chars")
+
+print("✅ All components working!")
 ```
 
 ## Environment Configuration
@@ -139,20 +185,20 @@ python -m pytest tests/test_tools.py -v
 
 ```bash
 # Enable automatic acceleration
-export CREWAI_RUST_ACCELERATION=1
+export CREWAI_ACCELERATE_ACCELERATION=1
 
 # Force specific component usage
-export CREWAI_RUST_MEMORY=true
-export CREWAI_RUST_TOOLS=true
-export CREWAI_RUST_TASKS=true
+export CREWAI_ACCELERATE_MEMORY=true
+export CREWAI_ACCELERATE_TOOLS=true
+export CREWAI_ACCELERATE_TASKS=true
 
 # Disable specific components
-export CREWAI_RUST_MEMORY=false
+export CREWAI_ACCELERATE_MEMORY=false
 ```
 
 ### Configuration File
 
-Create `~/.crewai-rust/config.toml`:
+Create `~/.crewai-accelerate/config.toml`:
 
 ```toml
 [acceleration]
@@ -179,20 +225,26 @@ thread_pool_size = 4
 **1. Import Error: "No module named '_core'"**
 
 ```bash
-# Rust extension not built properly
-pip uninstall crewai-rust
-pip install --no-cache-dir crewai-rust
+# Accelerated extension not built properly
+pip uninstall crewai-accelerate
+pip install --no-cache-dir crewai-accelerate
+
+# If still failing, build from source
+pip install maturin
+maturin develop
 ```
 
 **2. Performance Issues**
 
 ```python
 # Check implementation being used
-from crewai_rust import RustMemoryStorage
-storage = RustMemoryStorage()
+from crewai_accelerate import AcceleratedMemoryStorage
+storage = AcceleratedMemoryStorage()
 print(f"Implementation: {storage.implementation}")
 
-# Should show "rust", not "python"
+# Should show "accelerated", not "python"
+if storage.implementation != "accelerated":
+    print("⚠️ Using Python fallback - check acceleration installation")
 ```
 
 **3. Build Errors on Windows**
@@ -201,7 +253,7 @@ print(f"Implementation: {storage.implementation}")
 # Install Visual C++ Build Tools
 # Restart terminal and try again
 pip install --upgrade setuptools wheel
-pip install crewai-rust
+pip install crewai-accelerate
 ```
 
 **4. Version Conflicts**
@@ -211,6 +263,10 @@ pip install crewai-rust
 pip list | grep crew
 # Ensure crewai >= 0.28.0
 pip install --upgrade crewai
+
+# Check Python version
+python --version
+# Ensure Python >= 3.8
 ```
 
 ### Debug Mode
@@ -221,14 +277,20 @@ Enable detailed logging:
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
-import crewai_rust.shim
-crewai_rust.shim.enable_rust_acceleration(verbose=True)
+# Enable verbose acceleration
+import crewai_accelerate.shim
+crewai_accelerate.shim.enable_acceleration(verbose=True)
+
+# Check detailed status
+from crewai_accelerate.utils import get_acceleration_status, get_environment_info
+print("Acceleration status:", get_acceleration_status())
+print("Environment:", get_environment_info())
 ```
 
 ### Getting Help
 
-- **Issues**: [GitHub Issues](https://github.com/crewAI/crewai-rust/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/crewAI/crewai-rust/discussions)
+- **Issues**: [GitHub Issues](https://github.com/crewAI/crewai-accelerate/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/crewAI/crewai-accelerate/discussions)
 - **Discord**: [CrewAI Community](https://discord.gg/crewai)
 
 ## Next Steps

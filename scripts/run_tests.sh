@@ -1,9 +1,9 @@
 #!/bin/bash
-# Convenient test runner script for CrewAI Rust
+# Convenient test runner script for CrewAI Accelerate
 
 set -e
 
-echo "CrewAI Rust Test Runner"
+echo "CrewAI Accelerate Test Runner"
 echo "========================="
 
 # Check if pytest is available
@@ -50,7 +50,7 @@ case "${1:-all}" in
         ;;
     "coverage")
         echo "Running tests with coverage report"
-        run_tests "pytest --cov=crewai_rust --cov-report=html --cov-report=term" "Coverage Tests"
+        run_tests "pytest --cov=crewai_accelerate --cov-report=html --cov-report=term" "Coverage Tests"
         ;;
     "memory")
         echo "Running memory component tests"

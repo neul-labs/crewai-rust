@@ -8,51 +8,51 @@ import pytest
 class TestPackageImport:
     """Test basic package import functionality."""
 
-    def test_import_crewai_rust(self):
+    def test_import_crewai_accelerate(self):
         """Test that we can import the main package."""
-        import crewai_rust
-        assert crewai_rust is not None
+        import crewai_accelerate
+        assert crewai_accelerate is not None
 
     def test_package_version(self):
         """Test that package has version information."""
-        import crewai_rust
-        assert hasattr(crewai_rust, '__version__')
-        assert isinstance(crewai_rust.__version__, str)
+        import crewai_accelerate
+        assert hasattr(crewai_accelerate, '__version__')
+        assert isinstance(crewai_accelerate.__version__, str)
 
-    def test_rust_implementation_flag(self):
-        """Test that package has Rust implementation flag."""
-        import crewai_rust
-        assert hasattr(crewai_rust, 'HAS_RUST_IMPLEMENTATION')
-        assert isinstance(crewai_rust.HAS_RUST_IMPLEMENTATION, bool)
+    def test_acceleration_implementation_flag(self):
+        """Test that package has acceleration implementation flag."""
+        import crewai_accelerate
+        assert hasattr(crewai_accelerate, 'HAS_ACCELERATION_IMPLEMENTATION')
+        assert isinstance(crewai_accelerate.HAS_ACCELERATION_IMPLEMENTATION, bool)
 
-    def test_rust_availability_functions(self):
-        """Test Rust availability detection functions."""
-        from crewai_rust import is_rust_available, get_rust_status
+    def test_acceleration_availability_functions(self):
+        """Test acceleration availability detection functions."""
+        from crewai_accelerate import is_acceleration_available, get_acceleration_status
 
         # Should be able to call these functions
-        available = is_rust_available()
-        status = get_rust_status()
+        available = is_acceleration_available()
+        status = get_acceleration_status()
 
         assert isinstance(available, bool)
         assert isinstance(status, str)
 
     def test_main_component_imports(self):
         """Test that we can import main components."""
-        from crewai_rust import (
-            RustMemoryStorage,
-            RustToolExecutor,
-            RustTaskExecutor
+        from crewai_accelerate import (
+            AcceleratedMemoryStorage,
+            AcceleratedToolExecutor,
+            AcceleratedTaskExecutor
         )
 
-        assert RustMemoryStorage is not None
-        assert RustToolExecutor is not None
-        assert RustTaskExecutor is not None
+        assert AcceleratedMemoryStorage is not None
+        assert AcceleratedToolExecutor is not None
+        assert AcceleratedTaskExecutor is not None
 
     def test_serialization_imports(self):
         """Test that we can import serialization components."""
         try:
-            from crewai_rust import AgentMessage
-            assert AgentMessage is not None
+            from crewai_accelerate import AcceleratedMessage
+            assert AcceleratedMessage is not None
         except ImportError:
             # Serialization components might not be available
             pass
@@ -60,8 +60,8 @@ class TestPackageImport:
     def test_database_imports(self):
         """Test that we can import database components."""
         try:
-            from crewai_rust import RustSQLiteWrapper
-            assert RustSQLiteWrapper is not None
+            from crewai_accelerate import AcceleratedSQLiteWrapper
+            assert AcceleratedSQLiteWrapper is not None
         except ImportError:
             # Database components might not be available
             pass

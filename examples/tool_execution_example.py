@@ -3,7 +3,7 @@
 # This example shows how we could replace the existing Python tool execution
 # system with a high-performance Rust implementation
 
-from crewai_rust import RustToolExecutor
+from crewai_accelerate import RustToolExecutor
 import time
 
 class RustToolExecutorWrapper:

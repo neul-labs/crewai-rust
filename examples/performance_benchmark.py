@@ -8,7 +8,7 @@ and Rust implementations across all major components.
 
 import time
 import json
-from crewai_rust import RustMemoryStorage, RustToolExecutor, AgentMessage, RustTaskExecutor
+from crewai_accelerate import RustMemoryStorage, RustToolExecutor, AgentMessage, RustTaskExecutor
 
 def benchmark_memory_storage():
     \"\"\"
@@ -266,7 +266,7 @@ def benchmark_summary():
     print("COMPREHENSIVE BENCHMARK SUMMARY")
     print("=" * 60)
 
-    from crewai_rust import is_rust_available, get_rust_status
+    from crewai_accelerate import is_rust_available, get_rust_status
 
     print(f"Rust Acceleration: {'Available' if is_rust_available() else 'Not Available'}")
     print(f"Status: {get_rust_status()}")
@@ -282,7 +282,7 @@ def benchmark_summary():
 
     print("Optimization Tips:")
     print("   - Use batch operations for memory storage")
-    print("   - Enable Rust acceleration: import crewai_rust.shim")
+    print("   - Enable Rust acceleration: import crewai_accelerate.shim")
     print("   - Configure appropriate recursion limits")
     print("   - Design tasks for parallel execution")
     print()
@@ -298,7 +298,7 @@ def main():
     print("CrewAI Rust Integration Performance Benchmarks")
     print("=" * 60)
 
-    from crewai_rust import is_rust_available
+    from crewai_accelerate import is_rust_available
 
     if not is_rust_available():
         print("Rust acceleration not available")

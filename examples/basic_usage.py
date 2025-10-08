@@ -7,7 +7,7 @@ to your existing CrewAI workflows.
 """
 
 import crewai
-import crewai_rust.shim  # Automatic Rust acceleration
+import crewai_accelerate.shim  # Automatic Rust acceleration
 
 from crewai import Agent, Task, Crew
 
@@ -18,7 +18,7 @@ def main():
     print("=" * 40)
 
     # Check if Rust acceleration is active
-    from crewai_rust import is_rust_available, get_rust_status
+    from crewai_accelerate import is_rust_available, get_rust_status
     print(f"Rust acceleration: {'Active' if is_rust_available() else 'Inactive'}")
     print(f"Status: {get_rust_status()}")
     print()
@@ -90,7 +90,7 @@ def main():
     print("Memory Acceleration Demo:")
     print("-" * 30)
 
-    from crewai_rust import RustMemoryStorage
+    from crewai_accelerate import RustMemoryStorage
 
     # Create memory storage (using Rust acceleration)
     memory = RustMemoryStorage()

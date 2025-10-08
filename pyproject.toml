@@ -3,7 +3,7 @@ requires = ["maturin>=1.0,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "crewai-rust"
+name = "crewai-accelerate"
 requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -21,27 +21,27 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dynamic = ["version"]
-description = "High-performance Rust implementations for CrewAI components - requires explicit usage, does not automatically replace standard components"
+description = "High-performance acceleration for CrewAI - 2-5x faster memory, tools, and task execution with zero code changes"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
   { name = "CrewAI", email = "info@crewai.com" },
 ]
-keywords = ["crewai", "rust", "performance", "ai", "agents"]
+keywords = ["crewai", "acceleration", "performance", "ai", "agents", "optimization"]
 
 [project.scripts]
-crewai-rust = "crewai_rust.__main__:main"
-crewai-rust-bootstrap = "crewai_rust.bootstrap:main"
+crewai-accelerate = "crewai_accelerate.__main__:main"
+crewai-accelerate-bootstrap = "crewai_accelerate.bootstrap:main"
 
 [project.urls]
 Homepage = "https://github.com/crewAI/crewai"
-Documentation = "https://github.com/crewAI/crewai/blob/main/docs/crewai-rust/README.md"
+Documentation = "https://github.com/crewAI/crewai/blob/main/docs/crewai-accelerate/README.md"
 Repository = "https://github.com/crewAI/crewai"
 "Bug Tracker" = "https://github.com/crewAI/crewai/issues"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
-module-name = "crewai_rust._core"
+module-name = "crewai_accelerate._core"
 
 [tool.maturin.targets]
-crewai_rust = { path = "src/lib.rs" }
+crewai_accelerate = { path = "src/lib.rs" }

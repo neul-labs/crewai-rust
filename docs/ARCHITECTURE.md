@@ -114,15 +114,37 @@ class RustMemoryStorage:
 
 ### Vector Operations
 
-**Rust Implementation** (`src/lib.rs:43-56`):
+**Rust Implementation** (`src/lib.rs:126-156`):
 ```rust
-pub fn search(&self, query: &str) -> PyResult<Vec<String>> {
-    let data = self.data.lock().unwrap();
-    let results: Vec<String> = data
-        .iter()
-        .filter(|item| item.contains(query))  // TODO: Replace with SIMD
-        .cloned()
+pub fn search(&self, query: &str, limit: usize) -> PyResult<Vec<String>> {
+    let data = self.data.lock().map_err(|e| {
+        PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!(
+            "Failed to acquire lock: {}",
+            e
+        ))
+    })?;
+    
+    // Compute query word frequencies
+    let query_frequencies = self.compute_word_frequencies(query);
+    
+    // Calculate similarity scores for each item
+    let mut scored_results: Vec<(String, f64)> = Vec::new();
+    
+    for item in &*data {
+        let similarity = self.calculate_cosine_similarity(&query_frequencies, &item.word_frequencies);
+        scored_results.push((item.content.clone(), similarity));
+    }
+    
+    // Sort by similarity score (descending)
+    scored_results.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+    
+    // Take top results up to limit
+    let results: Vec<String> = scored_results
+        .into_iter()
+        .take(limit)
+        .map(|(content, _)| content)
         .collect();
+        
     Ok(results)
 }
 ```
@@ -150,8 +172,13 @@ def save(self, value: Any, metadata: Optional[Dict[str, Any]] = None) -> None:
             self._storage.save(serialized)
         except Exception as e:
             # Automatic fallback on error
+            print(f"Warning: Rust memory save failed, using Python fallback: {e}")
             self._use_rust = False
-            self._storage.append({...})  # Python fallback
+            self._storage.append({
+                'value': value,
+                'metadata': metadata or {},
+                'timestamp': time.time()
+            })
 ```
 
 ## Tool Execution Architecture
@@ -203,36 +230,42 @@ pub fn execute_tool(&self, name: &str, args: &str) -> PyResult<String> {
 
 ### Async Runtime
 
-**Tokio Integration** (`src/lib.rs:185-219`):
+**Tokio Integration** (`src/lib.rs:285-320`):
 ```rust
-#[pyclass]
-pub struct RustTaskExecutor {
-    runtime: Arc<tokio::runtime::Runtime>,
-}
-
-impl RustTaskExecutor {
-    pub fn execute_concurrent_tasks(&self, tasks: Vec<&str>) -> PyResult<Vec<String>> {
-        let runtime = self.runtime.clone();
-
-        runtime.block_on(async {
-            let mut handles = Vec::new();
-
-            for task in tasks {
-                let handle = tokio::spawn(async move {
-                    // True concurrency with work-stealing
-                    execute_task(task).await
-                });
-                handles.push(handle);
-            }
-
-            // Collect results
-            let mut results = Vec::new();
-            for handle in handles {
-                results.push(handle.await?);
-            }
-            Ok(results)
+pub fn execute_concurrent_tasks(&self, tasks: Vec<&str>) -> PyResult<Vec<String>> {
+    let runtime = self.runtime.clone();
+    
+    let results: Result<Vec<String>, PyErr> = Python::with_gil(|py| {
+        py.allow_threads(|| {
+            runtime.block_on(async {
+                let mut handles = Vec::new();
+                
+                for task in tasks {
+                    let task_str = task.to_string();
+                    let handle = tokio::spawn(async move {
+                        // Simulate some async work
+                        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+                        format!("Completed: {}", task_str)
+                    });
+                    handles.push(handle);
+                }
+                
+                let mut results = Vec::new();
+                for handle in handles {
+                    match handle.await {
+                        Ok(result) => results.push(result),
+                        Err(e) => return Err(PyErr::new::<PyRuntimeError, _>(
+                            format!("Task execution failed: {}", e)
+                        )),
+                    }
+                }
+                
+                Ok(results)
+            })
         })
-    }
+    });
+    
+    results
 }
 ```
 
@@ -255,21 +288,54 @@ Python Threading (GIL):     Rust Async (Work-Stealing):
 
 ### Connection Pooling
 
-**r2d2 Integration** (`src/lib.rs:229-272`):
+**r2d2 Integration** (`src/lib.rs:330-372`):
 ```rust
 #[pyclass]
 pub struct RustSQLiteWrapper {
     connection_pool: Arc<Mutex<r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>>>,
 }
 
+#[pymethods]
 impl RustSQLiteWrapper {
     #[new]
     pub fn new(db_path: &str, pool_size: u32) -> PyResult<Self> {
         let manager = r2d2_sqlite::SqliteConnectionManager::file(db_path);
         let pool = r2d2::Pool::builder()
             .max_size(pool_size)
-            .build(manager)?;
-
+            .build(manager)
+            .map_err(|e| {
+                PyErr::new::<PyRuntimeError, _>(format!(
+                    "Failed to create connection pool: {}",
+                    e
+                ))
+            })?;
+            
+        // Initialize database schema
+        {
+            let conn = pool.get().map_err(|e| {
+                PyErr::new::<PyRuntimeError, _>(format!(
+                    "Failed to get connection: {}",
+                    e
+                ))
+            })?;
+            
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS long_term_memories (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    task_description TEXT,
+                    metadata TEXT,
+                    datetime TEXT,
+                    score REAL
+                )",
+                [],
+            ).map_err(|e| {
+                PyErr::new::<PyRuntimeError, _>(format!(
+                    "Failed to create table: {}",
+                    e
+                ))
+            })?;
+        }
+            
         Ok(RustSQLiteWrapper {
             connection_pool: Arc::new(Mutex::new(pool)),
         })
@@ -286,7 +352,7 @@ impl RustSQLiteWrapper {
 
 ### Zero-Copy Operations
 
-**Serde Integration** (`src/lib.rs:112-158`):
+**Serde Integration** (`src/lib.rs:240-258`):
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[pyclass]
@@ -294,14 +360,34 @@ pub struct AgentMessage {
     #[pyo3(get, set)]
     pub id: String,
     #[pyo3(get, set)]
+    pub sender: String,
+    #[pyo3(get, set)]
+    pub recipient: String,
+    #[pyo3(get, set)]
     pub content: String,
-    // ... other fields
+    #[pyo3(get, set)]
+    pub timestamp: u64,
 }
 
+#[pymethods]
 impl AgentMessage {
     pub fn to_json(&self) -> PyResult<String> {
-        serde_json::to_string(self)  // Zero-copy serialization
-            .map_err(|e| PyErr::new::<PyRuntimeError, _>(format!("Serialization failed: {}", e)))
+        serde_json::to_string(self).map_err(|e| {
+            PyErr::new::<PyRuntimeError, _>(format!(
+                "Failed to serialize to JSON: {}",
+                e
+            ))
+        })
+    }
+
+    #[staticmethod]
+    pub fn from_json(json_str: &str) -> PyResult<AgentMessage> {
+        serde_json::from_str(json_str).map_err(|e| {
+            PyErr::new::<PyRuntimeError, _>(format!(
+                "Failed to deserialize from JSON: {}",
+                e
+            ))
+        })
     }
 }
 ```
